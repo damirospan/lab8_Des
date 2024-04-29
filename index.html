@@ -85,10 +85,10 @@
     window.addEventListener('load', async () => {
       // Подключаем MetaMask
       if (window.ethereum) {
-        window.web3 = new Web3(ethereum);
+        window.web3 = new Web3(window.ethereum); // Используем window.ethereum
         try {
           // Запрашиваем разрешение на подключение к аккаунту
-          await ethereum.enable();
+          await window.ethereum.enable();
         } catch (error) {
           // Пользователь отклонил запрос на подключение к аккаунту
           console.error("User denied account access");
@@ -96,7 +96,7 @@
       }
       // MetaMask не установлен
       else if (window.web3) {
-        window.web3 = new Web3(web3.currentProvider);
+        window.web3 = new Web3(window.web3.currentProvider);
       }
       // MetaMask не доступен
       else {
@@ -111,50 +111,50 @@
 
         // ABI вашего контракта
         const abi = [
-          {
-            "anonymous": false,
-            "inputs": [
-              {
-                "indexed": false,
-                "internalType": "string",
-                "name": "result",
-                "type": "string"
-              }
-            ],
-            "name": "GameResult",
-            "type": "event"
-          },
-          {
-            "inputs": [
-              {
-                "internalType": "enum RockPaperScissors.Choice",
-                "name": "_playerChoice",
-                "type": "uint8"
-              }
-            ],
-            "name": "play",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-          }
-        ];
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "result",
+				"type": "string"
+			}
+		],
+		"name": "GameResult",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum RockPaperScissors.Choice",
+				"name": "_playerChoice",
+				"type": "uint8"
+			}
+		],
+		"name": "play",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+];
 
         // Создаем экземпляр контракта
-        const contract = new web3.eth.Contract(abi, contractAddress);
+        const contract = new window.web3.eth.Contract(abi, contractAddress); // Используем window.web3
 
         // Получаем аккаунт пользователя из MetaMask
-        const accounts = await web3.eth.getAccounts();
+        const accounts = await window.web3.eth.getAccounts(); // Используем window.web3
         const userAccount = accounts[0];
 
         // Отправляем транзакцию из аккаунта MetaMask
         const result = await contract.methods.play(playerChoice).send({ from: userAccount });
 
         // Ожидаем завершения транзакции
-        const receipt = await web3.eth.getTransactionReceipt(result.transactionHash);
+        const receipt = await window.web3.eth.getTransactionReceipt(result.transactionHash); // Используем window.web3
 
         // Получаем результат игры из логов события GameResult
-        const logs = receipt.logs.filter(log => log.topics.includes(web3.utils.sha3('GameResult(string)')));
-        const decodedLog = web3.eth.abi.decodeLog([{ type: 'string', name: 'result', indexed: false }], logs[0].data, logs[0].topics.slice(1));
+        const logs = receipt.logs.filter(log => log.topics.includes(window.web3.utils.sha3('GameResult(string)'))); // Используем window.web3
+        const decodedLog = window.web3.eth.abi.decodeLog([{ type: 'string', name: 'result', indexed: false }], logs[0].data, logs[0].topics.slice(1)); // Используем window.web3
 
         // Отображаем результат на странице HTML
         showResult(decodedLog.result);
