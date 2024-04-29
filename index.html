@@ -5,55 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rock Paper Scissors</title>
   <style>
-    /* Добавленные стили */
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    button:active {
-      background-color: #004280;
-    }
-
-    #result-message {
-      text-align: center;
-    }
-
-    #result-text {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    #result-message button {
-      margin-top: 10px;
-      padding: 8px 16px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    #result-message button:hover {
-      background-color: #218838;
-    }
-
-    #result-message button:active {
-      background-color: #1e7e34;
-    }
-
-    /* Оригинальные стили */
     #result-message {
       display: none;
       position: fixed;
@@ -85,10 +36,10 @@
     window.addEventListener('load', async () => {
       // Подключаем MetaMask
       if (window.ethereum) {
-        window.web3 = new Web3(window.ethereum); // Используем window.ethereum
+        window.web3 = new Web3(ethereum);
         try {
           // Запрашиваем разрешение на подключение к аккаунту
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          await ethereum.enable();
         } catch (error) {
           // Пользователь отклонил запрос на подключение к аккаунту
           console.error("User denied account access");
@@ -96,7 +47,7 @@
       }
       // MetaMask не установлен
       else if (window.web3) {
-        window.web3 = new Web3(window.web3.currentProvider);
+        window.web3 = new Web3(web3.currentProvider);
       }
       // MetaMask не доступен
       else {
@@ -111,50 +62,50 @@
 
         // ABI вашего контракта
         const abi = [
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "result",
-				"type": "string"
-			}
-		],
-		"name": "GameResult",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "enum RockPaperScissors.Choice",
-				"name": "_playerChoice",
-				"type": "uint8"
-			}
-		],
-		"name": "play",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	}
-];
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "string",
+                "name": "result",
+                "type": "string"
+              }
+            ],
+            "name": "GameResult",
+            "type": "event"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "enum RockPaperScissors.Choice",
+                "name": "_playerChoice",
+                "type": "uint8"
+              }
+            ],
+            "name": "play",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          }
+        ];
 
         // Создаем экземпляр контракта
-        const contract = new window.web3.eth.Contract(abi, contractAddress); // Используем window.web3
+        const contract = new web3.eth.Contract(abi, contractAddress);
 
         // Получаем аккаунт пользователя из MetaMask
-        const accounts = await window.web3.eth.getAccounts(); // Используем window.web3
+        const accounts = await web3.eth.getAccounts();
         const userAccount = accounts[0];
 
         // Отправляем транзакцию из аккаунта MetaMask
         const result = await contract.methods.play(playerChoice).send({ from: userAccount });
 
         // Ожидаем завершения транзакции
-        const receipt = await window.web3.eth.getTransactionReceipt(result.transactionHash); // Используем window.web3
+        const receipt = await web3.eth.getTransactionReceipt(result.transactionHash);
 
         // Получаем результат игры из логов события GameResult
-        const logs = receipt.logs.filter(log => log.topics.includes(window.web3.utils.sha3('GameResult(string)'))); // Используем window.web3
-        const decodedLog = window.web3.eth.abi.decodeLog([{ type: 'string', name: 'result', indexed: false }], logs[0].data, logs[0].topics.slice(1)); // Используем window.web3
+        const logs = receipt.logs.filter(log => log.topics.includes(web3.utils.sha3('GameResult(string)')));
+        const decodedLog = web3.eth.abi.decodeLog([{ type: 'string', name: 'result', indexed: false }], logs[0].data, logs[0].topics.slice(1));
 
         // Отображаем результат на странице HTML
         showResult(decodedLog.result);
