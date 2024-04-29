@@ -88,7 +88,7 @@
         window.web3 = new Web3(window.ethereum); // Используем window.ethereum
         try {
           // Запрашиваем разрешение на подключение к аккаунту
-          await window.ethereum.enable();
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
         } catch (error) {
           // Пользователь отклонил запрос на подключение к аккаунту
           console.error("User denied account access");
